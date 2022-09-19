@@ -1,0 +1,31 @@
+{
+  "name": "alert-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "npx ts-node --transpile-only --files src/index.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/humanize-duration": "^3.27.1",
+    "@types/lodash": "^4.14.184",
+    "@types/millisecond": "^0.1.0",
+    "axios": "^0.27.2",
+    "bluebird": "^3.7.2",
+    "cheerio": "^1.0.0-rc.12",
+    "discord.js": "^14.3.0",
+    "dotenv": "^16.0.2",
+    "humanize-duration": "^3.27.3",
+    "lodash": "^4.17.21",
+    "millisecond": "^0.1.2"
+  },
+  "devDependencies": {
+    "@types/bluebird": "^3.5.36",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.8.3"
+  }
+}
