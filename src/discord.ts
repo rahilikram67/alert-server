@@ -6,6 +6,7 @@ import { view } from "./commands/view"
 import { interval } from "./commands/interval"
 import { available } from "./event/available"
 import { random } from "lodash"
+import { status } from "./commands/status"
 
 export const discordServer = () => {
     const config: Config & { client: Client } = {
@@ -39,6 +40,9 @@ export const discordServer = () => {
             case "!interval":
                 interval(message, config)
                 break
+            case "!status":
+                status(message, config)
+                break
         }
     })
 
@@ -51,11 +55,16 @@ export const discordServer = () => {
 
 }
 
-function repeater(config: Config & { client: Client }) {
+export async function repeater(config: Config & { client: Client }) {
     const channels: Collection<string, DMChannel> = config.client.channels.cache.filter((c: any) => !c.type) as any
-    available(channels, config)
-    var rand = random(5, 25, false) * 1000;
-    setTimeout(repeater, config.delay + rand, config)
+    var rand = random(5, 20, false) * 1000;
+    await new Promise(resolve => {
+        setTimeout(async () => {
+            await available(channels, config)
+            resolve(null)
+        }, config.delay + rand)
+    })
+    repeater(config)
 }
 
 

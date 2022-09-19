@@ -1,8 +1,5 @@
-import axios from "axios"
 import { EmbedBuilder, Message } from "discord.js"
-import * as cheerio from 'cheerio';
-import { compact, uniq } from "lodash"
-import * as blue from "bluebird"
+import { uniq } from "lodash"
 
 export async function add(message: Message, config: Config) {
     const matches = message.content.split(" ")

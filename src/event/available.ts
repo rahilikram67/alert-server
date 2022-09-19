@@ -30,26 +30,24 @@ export async function available(channels: Collection<string, DMChannel>, config:
     await blue.Promise.map(api_arr, (job: any) => {
         if (!job) return
         const { config: { url }, data } = job
-        if (!config.previous[url]) {
-            let p = url.includes("hibbett.com") ? hibbett(data) : jdFinish(data, url)
-            if (p) {
-                const { image, market, text } = p
-                const rest = omit(p, ["image", "market", "text"])
-                let fields = Object.entries(rest).map(e => ({ name: e[0], value: e[1], inline: true }))
-                channels.map(channel => channel.send({
-                    embeds: [new EmbedBuilder()
-                        .setTitle(text)
-                        .setAuthor({ name: market })
-                        .setThumbnail(image)
-                        .setURL(url)
-                        .setTimestamp()
-                        .setFields(fields)
-                    ]
-                }).catch(err => { }))
-
-            }
-            config.previous[url] = p as any
+        let p = url.includes("hibbett.com") ? hibbett(data) : jdFinish(data, url)
+        if (!config.previous[url] && p) {
+            const { image, market, text } = p
+            const rest = omit(p, ["image", "market", "text", "time"])
+            let fields = Object.entries(rest).map(e => ({ name: e[0], value: e[1], inline: true }))
+            channels.map(channel => channel.send({
+                embeds: [new EmbedBuilder()
+                    .setTitle(text)
+                    .setAuthor({ name: market })
+                    .setThumbnail(image)
+                    .setURL(url)
+                    .setTimestamp()
+                    .setFields(fields)
+                ]
+            }).catch(err => { }))
         }
+        if (p) p.time = Date.now()
+        config.previous[url] = p as any
     }, { concurrency: 100 })
 
 
@@ -72,7 +70,7 @@ function hibbett(data: string): Item | null {
         image: $(img).attr("href") || "",
         text: $(text).text(),
         market: "hibbett",
-        price: "$"+String(Number($(price).text()) || 0),
+        price: "$" + String(Number($(price).text()) || 0),
         color: $(color).text() || "\u200b",
         stock: "\u200b",
         size: size?.length ? size.join(",") : "\u200b"
@@ -95,7 +93,7 @@ function jdFinish(data: string, url: string): Item | null {
         image: $(img).attr("data-large") || "\u200b",
         text: $(text).text() || "\u200b",
         market,
-        price: "$"+String(price.length ? Number($(price[0]).text().slice(1)) : 0),
+        price: "$" + String(price.length ? Number($(price[0]).text().slice(1)) : 0),
         color: $(color).text().trim(),
         stock: stock || "\u200b",
         size: size.length ? $(size).text().match(/\d+(\.\d+)?/g)?.join(", ") || "\u200b" : "\u200b"

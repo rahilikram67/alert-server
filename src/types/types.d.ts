@@ -1,12 +1,10 @@
-
-
 interface Config {
     urls: string[]
     delay: number
     lock: boolean
     previous: ItemObject
+    timer?:NodeJS.Timer
 }
-
 interface Market {
     [key: string]: string
 }
@@ -16,9 +14,10 @@ interface Item {
     text: string
     market: string
     color: string
-    size: string,
+    size: string
     stock: string
     price: string
+    time?:number
 }
 
 interface ItemObject {
