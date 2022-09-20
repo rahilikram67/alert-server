@@ -1,11 +1,11 @@
-import { Collection, DMChannel, EmbedBuilder } from "discord.js";
-import axios, { AxiosError, AxiosResponse } from "axios";
+import { Client, DMChannel, EmbedBuilder } from "discord.js";
+import axios, { AxiosError } from "axios";
 import * as blue from "bluebird"
 import * as cheerio from "cheerio";
-import { omit, sampleSize } from "lodash";
-export async function available(channels: Collection<string, DMChannel>, config: Config) {
+import { isEmpty, omit, sample } from "lodash";
+export async function available(config: Config & { client: Client }) {
     if (config.lock) return console.log("process is locked")
-    else if (!config.urls.length) return
+    else if (!config.urls.length || isEmpty(config.channelMap)) return
     config.lock = true
     const user_agnt = [
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36",
@@ -21,7 +21,7 @@ export async function available(channels: Collection<string, DMChannel>, config:
     const api_arr = config.urls.map(e => {
         return (e.includes("hibbett.com")) ? axios.get(e, {
             headers: {
-                "User-Agent": sampleSize(user_agnt, 1)[0]
+                "User-Agent": sample(user_agnt) || ""
             }
         }).catch(printErr) : axios.get(e).catch(printErr)
     })
@@ -31,23 +31,27 @@ export async function available(channels: Collection<string, DMChannel>, config:
         if (!job) return
         const { config: { url }, data } = job
         let p = url.includes("hibbett.com") ? hibbett(data) : jdFinish(data, url)
-        if (!config.previous[url] && p) {
+        if (!p || !config.channelMap[p.market]) return
+        else if (!config.previous[url]) {
             const { image, market, text } = p
             const rest = omit(p, ["image", "market", "text", "time"])
             let fields = Object.entries(rest).map(e => ({ name: e[0], value: e[1], inline: true }))
-            channels.map(channel => channel.send({
-                embeds: [new EmbedBuilder()
-                    .setTitle(text)
-                    .setAuthor({ name: market })
-                    .setThumbnail(image)
-                    .setURL(url)
-                    .setTimestamp()
-                    .setFields(fields)
+            const channel: DMChannel = config.client.channels.cache.find((c: any) => c.name == config.channelMap[market]) as any
+            if (!channel) return
+            channel.send({
+                embeds: [
+                    new EmbedBuilder()
+                        .setTitle(text)
+                        .setAuthor({ name: market })
+                        .setThumbnail(image)
+                        .setURL(url)
+                        .setTimestamp()
+                        .setFields(fields)
                 ]
-            }).catch(err => { }))
+            }).catch(err => { })
         }
-        if (p) p.time = Date.now()
-        config.previous[url] = p as any
+        p.time = Date.now()
+        config.previous[url] = p
     }, { concurrency: 100 })
 
 
@@ -101,5 +105,5 @@ function jdFinish(data: string, url: string): Item | null {
 }
 
 function printErr(e: AxiosError) {
-    console.error(e.response?.config.url, " failed")
+    console.error(e.response?.config.url, " failed status:"+e.status)
 }

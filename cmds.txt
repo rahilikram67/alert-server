@@ -1,8 +1,5 @@
 !add [url]
 !del [url]
 !view
+!status
 !interval [10sec] [20sec] [1min] [1minute]...(upto years or yrs or yr)  (all will addup)
-
-
-
-

@@ -1,21 +1,16 @@
 import { EmbedBuilder, Message } from "discord.js"
 import { uniq } from "lodash"
+import { reply, resetTimer } from "../utils/func"
 
 export async function add(message: Message, config: Config) {
     const matches = message.content.split(" ")
-    
     matches.shift()
-    
     const arr_len = matches.length
-    if (arr_len && arr_len > 1) return message.reply({
-        content: "Commands are incorrect"
-    }).then(res => setTimeout(() => res.delete(), 2000))
+    if (arr_len && arr_len > 1) return reply(message, "Commands are incorrect")
     config.urls.push(matches[0])
     config.urls = uniq(config.urls)
-    message.reply({
-        content: `url ${matches[0]} has been added`
-    }).then(res => setTimeout(() => res.delete(), 2000))
-    
+    resetTimer(config)
+    reply(message, `url ${matches[0]} has been added`)
 }
 
 

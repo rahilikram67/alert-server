@@ -4,6 +4,7 @@ interface Config {
     lock: boolean
     previous: ItemObject
     timer?:NodeJS.Timer
+    channelMap:Market
 }
 interface Market {
     [key: string]: string

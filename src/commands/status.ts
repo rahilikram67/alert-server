@@ -1,10 +1,9 @@
-import { Client, Collection, DMChannel, EmbedBuilder, Message } from "discord.js";
+import { Client, EmbedBuilder, Message } from "discord.js";
 import { isEmpty, omit } from "lodash";
+import { reply } from "../utils/func";
 
-export async function status(message: Message, config: Config & { client: Client }) {
-    if (isEmpty(config.previous)) return message.reply("No entries").then(res => setTimeout(() => res.delete(), 2000)).catch((e) => console.error(e))
-
-    const channels: Collection<string, DMChannel> = config.client.channels.cache.filter((c: any) => !c.type) as any
+export async function status(message: Message, config: Config) {
+    if (isEmpty(config.previous)) return reply(message, "No entries")
     for (const v of Object.entries(config.previous)) {
         const [url, item] = v
         if (!item) continue
@@ -12,7 +11,7 @@ export async function status(message: Message, config: Config & { client: Client
         const rest = omit(item, ["image", "market", "text", "time"])
         let fields = Object.entries(rest).map(e => ({ name: e[0], value: e[1], inline: true }))
 
-        channels.map(channel => channel.send({
+        message.channel.send({
             embeds: [new EmbedBuilder()
                 .setTitle(text)
                 .setAuthor({ name: market })
@@ -21,7 +20,7 @@ export async function status(message: Message, config: Config & { client: Client
                 .setTimestamp(item.time)
                 .setFields(fields)
             ]
-        }).catch(err => { }))
+        }).catch(err => { })
 
     }
 }

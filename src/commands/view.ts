@@ -13,8 +13,15 @@ export async function view(message: Message, config: Config) {
                 .setImage("https://www.freeiconspng.com/thumbs/alert-icon/alert-icon-alert-icon-12.jpg")
                 .setTimestamp()
                 .setDescription(`Urls and interval for alert Bot`)
-                .addFields([{ name: "Urls:", value: urls.length ? urls.join("\n\n") : "\u200b" }])
-                .addFields([{ name: "Interval:", value: `\`\`\`${humanizeDuration(config.delay)}\`\`\`` }])
+                .addFields([
+                    { name: "Urls:", value: urls.length ? urls.join("\n\n") : "\u200b" },
+                    {
+                        name: "Channels Markets",
+                        value: Object.entries(config.channelMap).map(e => `${e[0]}: ${e[1]}`).join("\n") || "\u200b"
+                    },
+                    { name: "Interval:", value: `\`\`\`${humanizeDuration(config.delay)}\`\`\`` },
+                ])
+
         ]
     })
 }
