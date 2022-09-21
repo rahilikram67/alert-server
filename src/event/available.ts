@@ -31,7 +31,7 @@ export async function available(config: Config & { client: Client }) {
         if (!job) return
         const { config: { url }, data } = job
         let p = url.includes("hibbett.com") ? hibbett(data) : jdFinish(data, url)
-        if (!p || !config.channelMap[p.market]) return
+        if (!p || !config.channelMap[p.market]) return config.previous[url] = null as any
         else if (!config.previous[url]) {
             const { image, market, text } = p
             const rest = omit(p, ["image", "market", "text", "time"])
@@ -105,5 +105,5 @@ function jdFinish(data: string, url: string): Item | null {
 }
 
 function printErr(e: AxiosError) {
-    console.error(e.response?.config.url, " failed status:"+e.status)
+    console.error(e.response?.config.url, " failed status:" + e.status)
 }
