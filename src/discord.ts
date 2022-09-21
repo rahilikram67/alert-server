@@ -1,4 +1,4 @@
-import { Client, Message } from "discord.js"
+import { Client, GatewayIntentBits, Message } from "discord.js"
 
 import { add } from "./commands/add"
 import { del } from "./commands/del"
@@ -9,15 +9,22 @@ import { status } from "./commands/status"
 import { set } from "./commands/set"
 
 
-import { clone, cloneDeep, random } from "lodash"
+import { clone, random } from "lodash"
 import { defaults } from "./utils/defaults"
 import { reset } from "./commands/reset"
 import { info } from "./commands/info"
+import { db } from "./utils/stormDb"
 
 
 export const discordServer = () => {
-    const config = clone(defaults)
-
+    const config: Config & { client: Client } = clone(db.get("setting").value())
+    config.client = new Client({
+        intents: [
+            GatewayIntentBits.Guilds,
+            GatewayIntentBits.GuildMessages,
+            GatewayIntentBits.MessageContent
+        ],
+    })
     const cmds: { [key: string]: (message: Message, config: Config) => void } = {
         "add": add,
         "del": del,
@@ -50,7 +57,10 @@ export function repeater(config: Config & { client: Client }) {
 
     new Promise(resolve => {
         var rand = random(5, 20, false) * 1000;
-        setTimeout(() => available(config).then(resolve), config.delay + rand)
+        setTimeout(() => available(config).then(() => {
+            db.set("setting.previous", config.previous).save()
+            resolve(null)
+        }), config.delay + rand)
     }).then(() => {
         repeater(config)
     })

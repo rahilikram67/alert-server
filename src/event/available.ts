@@ -7,6 +7,7 @@ export async function available(config: Config & { client: Client }) {
     if (config.lock) return console.log("process is locked")
     else if (!config.urls.length || isEmpty(config.channelMap)) return
     config.lock = true
+
     const user_agnt = [
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36",
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:104.0) Gecko/20100101 Firefox/104.0",
@@ -25,7 +26,6 @@ export async function available(config: Config & { client: Client }) {
             }
         }).catch(printErr) : axios.get(e).catch(printErr)
     })
-
     //api call concurrency amd message sending concurrency
     await blue.Promise.map(api_arr, (job: any) => {
         if (!job) return

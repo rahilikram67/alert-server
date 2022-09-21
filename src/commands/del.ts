@@ -1,6 +1,7 @@
 import { Message } from "discord.js"
 import { remove } from "lodash"
 import { reply, resetTimer } from "../utils/func"
+import { db } from "../utils/stormDb"
 
 export async function del(message: Message, config: Config) {
     const matches = message.content.split(" ")
@@ -10,6 +11,7 @@ export async function del(message: Message, config: Config) {
     const url = matches[0]
     remove(config.urls, (u) => u == url)
     delete config.previous[url]
+    db.set("setting.urls", config.urls as any).save()
     resetTimer(config)
     reply(message, `url ${url} has been removed`)
 }

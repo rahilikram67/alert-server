@@ -1,5 +1,6 @@
 import { Message } from "discord.js";
 import { reply, resetTimer } from "../utils/func";
+import { db } from "../utils/stormDb";
 
 export function set(message: Message, config: Config) {
 
@@ -19,6 +20,7 @@ export function set(message: Message, config: Config) {
         config.channelMap[key] = value
         temp += `${key}=${value}\n`
     }
+    db.set(`setting.channelMap`, config.channelMap).save()
     resetTimer(config)
     reply(message, temp)
 }

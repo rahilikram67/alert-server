@@ -1,4 +1,4 @@
-import { Client, EmbedBuilder, Message } from "discord.js";
+import { EmbedBuilder, Message } from "discord.js";
 import { isEmpty, omit } from "lodash";
 import { reply } from "../utils/func";
 
@@ -12,13 +12,14 @@ export async function status(message: Message, config: Config) {
         let fields = Object.entries(rest).map(e => ({ name: e[0], value: e[1], inline: true }))
 
         message.channel.send({
-            embeds: [new EmbedBuilder()
-                .setTitle(text)
-                .setAuthor({ name: market })
-                .setThumbnail(image)
-                .setURL(url)
-                .setTimestamp(item.time)
-                .setFields(fields)
+            embeds: [
+                new EmbedBuilder()
+                    .setTitle(text)
+                    .setAuthor({ name: market })
+                    .setThumbnail(image)
+                    .setURL(url)
+                    .setTimestamp(item.time)
+                    .setFields(fields)
             ]
         }).catch(err => { })
 

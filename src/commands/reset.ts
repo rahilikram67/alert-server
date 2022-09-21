@@ -1,9 +1,12 @@
 import { Message } from "discord.js";
-import { clone } from "lodash";
 import { defaults } from "../utils/defaults";
 import { reply } from "../utils/func";
+import { db } from "../utils/stormDb";
 
-export function reset(message:Message,config:Config){
-    Object.assign(config,clone(defaults))
-    reply(message,"Reset to default values")
+
+
+export function reset(message: Message, config: Config) {
+    Object.assign(config, defaults)
+    db.set("setting",defaults).save()
+    reply(message, "Reset to default values")
 }
