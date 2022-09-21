@@ -4,7 +4,7 @@ import * as blue from "bluebird"
 import * as cheerio from "cheerio";
 import { isEmpty, omit, sample } from "lodash";
 export async function available(config: Config & { client: Client }) {
-    if (config.lock) return console.log("process is locked")
+    if (config.lock) return
     else if (!config.urls.length || isEmpty(config.channelMap)) return
     config.lock = true
 
