@@ -22,7 +22,7 @@ export async function available(config: Config & { client: Client }) {
 
         if (!job) continue
         const { data } = job as any
-        if (config._403 && config._403.includes(url)) remove(config._403, url)
+        if (config._403 && config._403.includes(url)) remove(config._403, u => u == url)
         let p = url.includes("hibbett.com") ? hibbett(data) : jdFinish(data, url)
         if (!p) return config.previous[url] = null as any
         else if (!config.previous[url]) {
