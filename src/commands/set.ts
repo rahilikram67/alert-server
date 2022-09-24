@@ -1,10 +1,10 @@
 import { Message } from "discord.js";
-import { reply, resetTimer } from "../utils/func";
+import { reply } from "../utils/func";
 import { db } from "../utils/stormDb";
 
 export function set(message: Message, config: Config) {
 
-    const matches = message.content.split(" ")
+    const matches = message.content.split(/\s+/g)
 
     matches.shift()
 
@@ -21,6 +21,6 @@ export function set(message: Message, config: Config) {
         temp += `${key}=${value}\n`
     }
     db.set(`setting.channelMap`, config.channelMap).save()
-    resetTimer(config)
+    
     reply(message, temp)
 }

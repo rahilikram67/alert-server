@@ -1,23 +1,24 @@
-import { Client, GatewayIntentBits, Message } from "discord.js"
+import { Channel, Client, DMChannel, GatewayIntentBits, Message } from "discord.js"
 
 import { add } from "./commands/add"
 import { del } from "./commands/del"
 import { view } from "./commands/view"
-import { interval } from "./commands/interval"
 import { available } from "./event/available"
 import { status } from "./commands/status"
 import { set } from "./commands/set"
 
 
-import { clone, random } from "lodash"
-import { defaults } from "./utils/defaults"
+import { clone } from "lodash"
 import { reset } from "./commands/reset"
 import { info } from "./commands/info"
 import { db } from "./utils/stormDb"
+import { defaults } from "./utils/defaults"
 
+import { CronJob } from "cron"
 
 export const discordServer = () => {
-    const config: Config & { client: Client } = clone(db.get("setting").value())
+    const config: Config & { client: Client } = clone(db.value()?.setting || defaults) as any
+    if (!db.value()?.setting?.urls) db.set("setting", defaults).save()
     config.client = new Client({
         intents: [
             GatewayIntentBits.Guilds,
@@ -29,7 +30,6 @@ export const discordServer = () => {
         "add": add,
         "del": del,
         "view": view,
-        "interval": interval,
         "status": status,
         "set": set,
         "reset": reset,
@@ -39,8 +39,9 @@ export const discordServer = () => {
 
 
     config.client.on("messageCreate", async (message) => {
+        if (!message.member?.permissions.has("Administrator")) return
         const cmd = message.content.split(" ")[0].slice(1)
-        if (!cmds[cmd]) return
+        if (!cmds[cmd]) { }
         else cmds[cmd](message, config)
     })
 
@@ -48,23 +49,16 @@ export const discordServer = () => {
 
     config.client.on("ready", () => {
         console.log("Bot is ready!")
-        repeater(config)
+        new CronJob("*/10 * * * * *", async () => {
+            await available(config)
+            if (!config.lock) db.set("setting.previous", config.previous).save()
+        }).start()
     })
     config.client.login(process.env.TOKEN)
+    return config
 }
 
-export function repeater(config: Config & { client: Client }) {
 
-    new Promise(resolve => {
-        var rand = random(5, 20, false) * 1000;
-        setTimeout(() => available(config).then(() => {
-            db.set("setting.previous", config.previous).save()
-            resolve(null)
-        }), config.delay + rand)
-    }).then(() => {
-        repeater(config)
-    })
-}
 
 
 

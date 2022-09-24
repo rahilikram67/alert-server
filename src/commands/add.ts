@@ -1,17 +1,16 @@
 import { EmbedBuilder, Message } from "discord.js"
 import { uniq } from "lodash"
-import { reply, resetTimer } from "../utils/func"
+import { reply } from "../utils/func"
 import { db } from "../utils/stormDb"
 
 export async function add(message: Message, config: Config) {
-    const matches = message.content.split(" ")
+    const matches = message.content.split(/\s+/g)
     matches.shift()
     const arr_len = matches.length
     if (arr_len && arr_len > 1) return reply(message, "Commands are incorrect")
     config.urls.push(matches[0])
     config.urls = uniq(config.urls)
     db.set("setting.urls", config.urls as any).save()
-    resetTimer(config)
     reply(message, `url ${matches[0]} has been added`)
 }
 

@@ -1,11 +1,10 @@
 import { Client } from "discord.js";
-import discord from "discord.js"
 
 
-export const defaults: Config = {
-    delay: 10000,
+
+export const defaults: Config & { client?: Client } = {
     urls: [],
     lock: false,
     previous: {},
-    channelMap: {}
+    channelMap: {},
 }

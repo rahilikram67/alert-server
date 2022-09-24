@@ -1,10 +1,10 @@
 interface Config {
     urls: string[]
-    delay: number
     lock: boolean
     previous: ItemObject
-    timer?:NodeJS.Timer
-    channelMap:Market
+    timer?: NodeJS.Timer
+    channelMap: Market
+    _403?: string[]
 }
 interface Market {
     [key: string]: string
@@ -18,7 +18,7 @@ interface Item {
     size: string
     stock: string
     price: string
-    time?:number
+    time?: number
 }
 
 interface ItemObject {

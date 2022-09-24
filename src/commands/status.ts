@@ -1,5 +1,6 @@
 import { EmbedBuilder, Message } from "discord.js";
 import { isEmpty, omit } from "lodash";
+import { messageSendError } from "../utils/errors";
 import { reply } from "../utils/func";
 
 export async function status(message: Message, config: Config) {
@@ -21,7 +22,7 @@ export async function status(message: Message, config: Config) {
                     .setTimestamp(item.time)
                     .setFields(fields)
             ]
-        }).catch(err => { })
+        }).catch(err=>messageSendError(message))
 
     }
 }

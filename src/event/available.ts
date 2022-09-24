@@ -1,61 +1,52 @@
 import { Client, DMChannel, EmbedBuilder } from "discord.js";
 import axios, { AxiosError } from "axios";
-import * as blue from "bluebird"
-import * as cheerio from "cheerio";
-import { isEmpty, omit, sample } from "lodash";
-export async function available(config: Config & { client: Client }) {
-    if (config.lock) return
-    else if (!config.urls.length || isEmpty(config.channelMap)) return
-    config.lock = true
 
-    const user_agnt = [
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36",
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:104.0) Gecko/20100101 Firefox/104.0",
-        "Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/105.0.5195.129 Mobile/15E148 Safari/604.1",
-        "Mozilla/5.0 (Linux; Android 10) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.5195.136 Mobile Safari/537.36",
-        "Mozilla/5.0 (Linux; Android 10; LM-Q720) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.5195.136 Mobile Safari/537.36",
-        "Mozilla/5.0 (Linux; Android 10; SM-G960U) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.5195.136 Mobile Safari/537.36",
-        "Mozilla/5.0 (Linux; Android 10; SM-N960U) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.5195.136 Mobile Safari/537.36",
-        "Mozilla/5.0 (Linux; Android 10; LM-X420) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.5195.136 Mobile Safari/537.36",
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36",
-    ]
-    const api_arr = config.urls.map(e => {
-        return (e.includes("hibbett.com")) ? axios.get(e, {
-            headers: {
-                "User-Agent": sample(user_agnt) || ""
-            }
-        }).catch(printErr) : axios.get(e).catch(printErr)
-    })
-    //api call concurrency amd message sending concurrency
-    await blue.Promise.map(api_arr, (job: any) => {
-        if (!job) return
-        const { config: { url }, data } = job
+import * as cheerio from "cheerio";
+import { groupBy, isEmpty, omit, remove, sample } from "lodash";
+import HttpsProxyAgent from "https-proxy-agent/dist/agent";
+import proxies from "./proxies.json"
+import UserAgent from 'user-agents';
+import headers from "./header.json"
+import fs from "fs"
+import { messageSendError, printErr } from "../utils/errors";
+export async function available(config: Config & { client: Client }) {
+    if (config.lock || !config.urls.length || isEmpty(config.channelMap)) return
+
+    //api call with no concurrency amd message sending concurrency
+    headers["user-agent"] = new UserAgent().toString()
+    const embeds: EmbedBuilder[] = []
+
+    for (const url of config.urls) {
+        const job = await (url.includes("hibbett.com") ?
+            axios.create({ httpsAgent: new HttpsProxyAgent(sample(proxies) || {}) }).get(url, { headers }) : axios.get(url)).catch((err) => printErr(err, config))
+
+        if (!job) continue
+        const { data } = job as any
+        if (config._403 && config._403.includes(url)) remove(config._403, url)
         let p = url.includes("hibbett.com") ? hibbett(data) : jdFinish(data, url)
-        if (!p || !config.channelMap[p.market]) return config.previous[url] = null as any
+        if (!p) return config.previous[url] = null as any
         else if (!config.previous[url]) {
             const { image, market, text } = p
             const rest = omit(p, ["image", "market", "text", "time"])
             let fields = Object.entries(rest).map(e => ({ name: e[0], value: e[1], inline: true }))
-            const channel: DMChannel = config.client.channels.cache.find((c: any) => c.name == config.channelMap[market]) as any
-            if (!channel) return
-            channel.send({
-                embeds: [
-                    new EmbedBuilder()
-                        .setTitle(text)
-                        .setAuthor({ name: market })
-                        .setThumbnail(image)
-                        .setURL(url)
-                        .setTimestamp()
-                        .setFields(fields)
-                ]
-            }).catch(err => { })
+            embeds.push(
+                new EmbedBuilder()
+                    .setTitle(text)
+                    .setAuthor({ name: market })
+                    .setThumbnail(image)
+                    .setURL(url)
+                    .setTimestamp()
+                    .setFields(fields)
+            )
         }
         p.time = Date.now()
         config.previous[url] = p
-    }, { concurrency: 100 })
-
-
-
+    }
+    const channel_embeds = groupBy(embeds, e => e.data.author?.name)
+    for (const c of Object.entries(config.channelMap)) {  // c[0] is channelid & c[1] is market 
+        const channel: DMChannel | undefined = config.client.channels.cache.get(c[0]) as any
+        if (channel && channel_embeds[c[1]]) await channel.send({ embeds: channel_embeds[c[1]] }).catch(err => messageSendError({ channel } as any))
+    }
     config.lock = false
 }
 
@@ -104,6 +95,5 @@ function jdFinish(data: string, url: string): Item | null {
     }
 }
 
-function printErr(e: AxiosError) {
-    console.error(e.response?.config.url, " failed status:" + e.status)
-}
+
+// https://www.hibbett.com/jordan-9-retro-black-gum-light-brown-mens-boot/5P702.html?dwvar_5P702_color=0056&cgid=men-shoes-basketballshoes#start=1&sz=24
