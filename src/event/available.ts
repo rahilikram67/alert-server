@@ -15,10 +15,10 @@ export async function available(config: Config & { client: Client }) {
     //api call with no concurrency amd message sending concurrency
     headers["user-agent"] = new UserAgent().toString()
     const embeds: EmbedBuilder[] = []
-
+    const _axios = axios.create({ httpsAgent: new HttpsProxyAgent(sample(proxies) || {}) })
     for (const url of config.urls) {
         const job = await (url.includes("hibbett.com") ?
-            axios.create({ httpsAgent: new HttpsProxyAgent(sample(proxies) || {}) }).get(url, { headers }) : axios.get(url)).catch((err) => printErr(err, config))
+            _axios.get(url, { headers }) : _axios.get(url, { headers: { "user-agent": new UserAgent().toString() } })).catch((err) => printErr(err, config))
 
         if (!job) continue
         const { data } = job as any
