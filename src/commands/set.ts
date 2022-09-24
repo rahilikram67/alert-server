@@ -16,7 +16,7 @@ export function set(message: Message, config: Config) {
     for (const str of matches) {
         if (!str.includes("=")) return
         const [key, value] = str.split("=")
-        if (!value || !["hibbett", "jdsports", "finishline"].includes(value) || /^\d+$/g.test(key)) return
+        if (!value || !["hibbett", "jdsports", "finishline"].includes(value) || !/^\d+$/g.test(key)) return reply(message,"Error please type !info to see how to type command")
         config.channelMap[key] = value
         temp += `${key}=${value}\n`
     }
