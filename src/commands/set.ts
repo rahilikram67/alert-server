@@ -16,11 +16,11 @@ export function set(message: Message, config: Config) {
     for (const str of matches) {
         if (!str.includes("=")) return
         const [key, value] = str.split("=")
-        if (!value) return
+        if (!value || !["hibbett", "jdsports", "finishline"].includes(value) || /^\d+$/g.test(key)) return
         config.channelMap[key] = value
         temp += `${key}=${value}\n`
     }
     db.set(`setting.channelMap`, config.channelMap).save()
-    
+
     reply(message, temp)
 }
