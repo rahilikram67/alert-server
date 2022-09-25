@@ -3,11 +3,10 @@ import { Message } from "discord.js"
 import { union } from "lodash"
 
 export function printErr(e: AxiosError, config: Config) {
+    if (e.response?.status !== 403) return
     const url = e.response?.config.url
-    if (url?.includes("hibbett")) console.error(url, " failed status:" + e?.response?.status)
-    if (e.response?.status == 403 && e.response?.config.url) {
-        config._403 = config._403 ? union(config._403, [url]) : [url] as any
-    }
+    console.error(url, " failed status:" + e?.response?.status)
+    config._403 = config._403 ? union(config._403, [url]) : [url] as any
 }
 
 export function messageSendError(message: Message) {
