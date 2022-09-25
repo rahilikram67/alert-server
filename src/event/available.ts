@@ -6,7 +6,7 @@ import { messageSendError } from "../utils/errors";
 import { hibHttp, jfinHttp } from "../utils/httpCalls";
 export async function available(config: Config & { client: Client }) {
     if (config.lock || !config.urls.length || isEmpty(config.channelMap)) return
-
+    config.lock = true
     //api call with no concurrency amd message sending concurrency
 
     const embeds: EmbedBuilder[] = []
@@ -87,5 +87,3 @@ function jdFinish(data: string, url: string): Item | null {
     }
 }
 
-
-// https://www.hibbett.com/jordan-9-retro-black-gum-light-brown-mens-boot/5P702.html?dwvar_5P702_color=0056&cgid=men-shoes-basketballshoes#start=1&sz=24
