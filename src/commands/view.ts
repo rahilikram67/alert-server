@@ -47,5 +47,7 @@ export async function view(message: Message, config: Config) {
                 `)
         ]
     }).catch(err => messageSendError(message))
+
+    if(!_403 && isEmpty(config.channelMap) && config.urls && config.urls.length) message.channel.send("No Entries")
 }
 
