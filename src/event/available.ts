@@ -1,25 +1,19 @@
 import { Client, DMChannel, EmbedBuilder } from "discord.js";
-import axios, { AxiosError } from "axios";
 
 import * as cheerio from "cheerio";
-import { groupBy, isEmpty, omit, remove, sample } from "lodash";
-import HttpsProxyAgent from "https-proxy-agent/dist/agent";
-import proxies from "./proxies.json"
-import UserAgent from 'user-agents';
-import headers from "./header.json"
+import { groupBy, isEmpty, omit, remove } from "lodash";
+import { messageSendError } from "../utils/errors";
+import { hibHttp, jfinHttp } from "../utils/httpCalls";
 import fs from "fs"
-import { messageSendError, printErr } from "../utils/errors";
 export async function available(config: Config & { client: Client }) {
     if (config.lock || !config.urls.length || isEmpty(config.channelMap)) return
 
     //api call with no concurrency amd message sending concurrency
-    headers["user-agent"] = new UserAgent().toString()
-    const embeds: EmbedBuilder[] = []
-    const _axios = axios.create({ httpsAgent: new HttpsProxyAgent(sample(proxies) || {}) })
-    for (const url of config.urls) {
-        const job = await (url.includes("hibbett.com") ?
-            _axios.get(url, { headers }) : _axios.get(url, { headers: { "user-agent": new UserAgent().toString() } })).catch((err) => printErr(err, config))
 
+    const embeds: EmbedBuilder[] = []
+
+    for (const url of config.urls) {
+        const job = url.includes("hibbett.com") ? await hibHttp(url, config) : await jfinHttp(url, config)
         if (!job) continue
         const { data } = job as any
         if (config._403 && config._403.includes(url)) remove(config._403, u => u == url)
@@ -49,7 +43,6 @@ export async function available(config: Config & { client: Client }) {
     }
     config.lock = false
 }
-
 
 function hibbett(data: string): Item | null {
     const $ = cheerio.load(data)

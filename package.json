@@ -31,8 +31,7 @@
     "millisecond": "^0.1.2",
     "preact-render-to-string": "^5.2.4",
     "solid-js": "^1.5.5",
-    "stormdb": "^0.6.0",
-    "user-agents": "^1.0.1147"
+    "stormdb": "^0.6.0"
   },
   "devDependencies": {
     "@types/bluebird": "^3.5.36",

@@ -49,7 +49,7 @@ export const discordServer = () => {
 
     config.client.on("ready", () => {
         console.log("Bot is ready!")
-        new CronJob("*/10 * * * * *", async () => {
+        new CronJob("*/5 * * * * *", async () => {
             await available(config)
             if (!config.lock) db.set("setting.previous", config.previous).save()
         }).start()
