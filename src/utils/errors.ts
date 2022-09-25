@@ -5,7 +5,7 @@ import { union } from "lodash"
 export function printErr(e: AxiosError, config: Config) {
     const url = e.response?.config.url
     console.error(url, " failed status:" + e?.response?.status)
-    if (e.response?.status !== 403) return
+    if (e.response?.status != 403) return
     config._403 = config._403 ? union(config._403, [url]) : [url] as any
 }
 
