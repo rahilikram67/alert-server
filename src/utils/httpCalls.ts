@@ -13,8 +13,6 @@ export async function hibHttp(url: string, config: Config) {
 }
 
 export async function jfinHttp(url: string, config: Config) {
-    headers["user-agent"] = sample(agents) || ""
     await new Promise(resolve => setTimeout(resolve, random(1, 4) * 1000))
-    return await axios.get(url, { headers }).catch(err => printErr(err, config))
-
+    return await axios.get(url).catch(err => printErr(err, config))
 }
