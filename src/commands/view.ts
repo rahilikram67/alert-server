@@ -9,7 +9,7 @@ export async function view(message: Message, config: Config) {
 
     if (urls && urls.length) {
         const embeds: EmbedBuilder[] = []
-        for (let url of chunk(urls)) {
+        for (let url of chunk(urls,20)) {
             embeds.push(
                 new EmbedBuilder()
                     .setColor(0x0099FF)
