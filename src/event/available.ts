@@ -24,10 +24,10 @@ export async function available(config: Config & { client: Client }) {
             let fields = Object.entries(rest).map(e => ({ name: e[0], value: e[1], inline: true }))
             embeds.push(
                 new EmbedBuilder()
-                    .setTitle(text)
+                    .setTitle(text || "\u200b")
                     .setAuthor({ name: market })
-                    .setThumbnail(image)
-                    .setURL(url)
+                    .setThumbnail(image || "https://cdns.iconmonstr.com/wp-content/releases/preview/2019/240/iconmonstr-product-3.png")
+                    .setURL(url || "https://www.hibbett.com")
                     .setTimestamp()
                     .setFields(fields)
             )
@@ -67,7 +67,7 @@ function hibbett(data: string): Item | null {
 function jdFinish(data: string, url: string): Item | null {
     const $ = cheerio.load(data)
     let avail = $("#buttonAddToCart")
-    if (!avail.length) {return null}
+    if (!avail.length) { return null }
     const img = $("#thumbSlides > div:nth-child(1) > div")
     const text = $(".product-detail-container > .hmt-3 > div:nth-child(1) > .row.column > h1")
     const market = url.includes("jdsports.com") ? "jdsports" : "finishline"
